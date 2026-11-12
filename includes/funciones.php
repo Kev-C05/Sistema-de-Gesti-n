@@ -116,3 +116,8 @@ function validar_fecha($valor): ?string
 
 // La sesion se inicia
 iniciar_sesion_segura();
+
+function formato_dinero($valor): string
+{
+    return '$' . number_format((float) $valor, 2, '.', ',');
+}
