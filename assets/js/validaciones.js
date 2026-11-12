@@ -1,4 +1,7 @@
+// Validacion del lado del cliente y confirmaciones.
+
 document.addEventListener('DOMContentLoaded', function () {
+    // Formularios con validacion.
     var formularios = document.querySelectorAll('form.needs-validation');
 
     formularios.forEach(function (form) {
@@ -27,6 +30,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 evento.stopPropagation();
             }
             form.classList.add('was-validated');
+        });
+    });
+
+    // Formularios que piden confirmacion antes de enviarse al basurero.
+    var confirmables = document.querySelectorAll('form[data-confirmar]');
+
+    confirmables.forEach(function (form) {
+        form.addEventListener('submit', function (evento) {
+            if (!window.confirm(form.dataset.confirmar)) {
+                evento.preventDefault();
+            }
         });
     });
 });
