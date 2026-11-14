@@ -3,6 +3,8 @@
 // Ruta base de esta wea
 define('BASE_URL', '/FinanTrack/');
 
+date_default_timezone_set('America/Mexico_City');
+
 // Sesion segura y si no balasos 
 
 function iniciar_sesion_segura(): void
@@ -64,6 +66,7 @@ function token_csrf(): string
     }
     return $_SESSION['csrf_token'];
 }
+
 // Devuelve un campo escondido, uuuuuh.
 function campo_csrf(): string
 {
@@ -119,5 +122,7 @@ iniciar_sesion_segura();
 
 function formato_dinero($valor): string
 {
-    return '$' . number_format((float) $valor, 2, '.', ',');
+    $numero = (float) $valor;
+    $signo = $numero < 0 ? '-' : '';
+    return $signo . '$' . number_format(abs($numero), 2, '.', ',');
 }
