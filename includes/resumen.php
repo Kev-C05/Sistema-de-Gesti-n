@@ -53,3 +53,21 @@ function gastos_por_categoria_mes(int $usuario_id): array
 
     return $filas;
 }
+
+
+// Total ahorrado en aportaciones a objetivos.
+// Las aportaciones NO forman parte de movimientos: no afectan el balance.
+function total_ahorrado_objetivos(int $usuario_id): string
+{
+    $stmt = obtener_conexion()->prepare(
+        'SELECT COALESCE(SUM(importe), 0) AS total FROM aportaciones WHERE usuario_id = ?'
+    );
+    $stmt->bind_param('i', $usuario_id);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $fila = $resultado->fetch_assoc();
+    $resultado->free();
+    $stmt->close();
+
+    return (string) $fila['total'];
+}

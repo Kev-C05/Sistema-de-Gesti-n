@@ -14,10 +14,10 @@ $email = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exigir_post_csrf();
 
-    $nombre = trim($_POST['nombre'] ?? '');
-    $email = strtolower(trim($_POST['email'] ?? ''));
-    $password = $_POST['password'] ?? '';
-    $confirmar = $_POST['password_confirmar'] ?? '';
+    $nombre = texto_enviado($_POST, 'nombre');
+    $email = strtolower(texto_enviado($_POST, 'email'));
+    $password = (isset($_POST['password']) && is_string($_POST['password'])) ? $_POST['password'] : '';
+    $confirmar = (isset($_POST['password_confirmar']) && is_string($_POST['password_confirmar'])) ? $_POST['password_confirmar'] : '';
 
     if ($nombre === '' || mb_strlen($nombre) > 100) {
         $errores[] = 'Escribe tu nombre (máximo 100 caracteres).';

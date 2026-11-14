@@ -8,8 +8,8 @@ requerir_login();
 exigir_post_csrf();
 
 $usuario_id = usuario_actual_id();
-$nombre = trim($_POST['nombre'] ?? '');
-$tipo = $_POST['tipo'] ?? '';
+$nombre = texto_enviado($_POST, 'nombre');
+$tipo = texto_enviado($_POST, 'tipo');
 
 $errores = [];
 if ($nombre === '' || mb_strlen($nombre) > 80) {

@@ -115,3 +115,12 @@ CREATE TABLE aportaciones (
     REFERENCES objetivos (id, usuario_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+CREATE TABLE intentos_login (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  email VARCHAR(150) NOT NULL,
+  ip VARCHAR(45) NOT NULL,
+  creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_intentos (email, ip, creado_en)
+) ENGINE=InnoDB;

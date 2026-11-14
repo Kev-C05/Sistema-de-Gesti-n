@@ -177,6 +177,8 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
 
                         <div class="mt-3 pt-2 border-top d-flex gap-2">
+                            <a class="btn btn-sm btn-primary"
+                               href="<?= e(BASE_URL) ?>aportaciones.php?objetivo=<?= (int) $fila['id'] ?>">Aportaciones</a>
                             <a class="btn btn-sm btn-outline-primary"
                                href="<?= e(BASE_URL) ?>objetivos.php?editar=<?= (int) $fila['id'] ?>">Editar</a>
 

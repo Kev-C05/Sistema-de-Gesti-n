@@ -9,7 +9,7 @@ exigir_post_csrf();
 
 $usuario_id = usuario_actual_id();
 $id = filter_var($_POST['id'] ?? '', FILTER_VALIDATE_INT);
-$nombre = trim($_POST['nombre'] ?? '');
+$nombre = texto_enviado($_POST, 'nombre');
 
 if ($id === false || $id < 1) {
     agregar_mensaje('danger', 'Categoría no válida.');

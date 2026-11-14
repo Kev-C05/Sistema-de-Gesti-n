@@ -1,10 +1,11 @@
 <?php
-// Aquí te registras papa o hago verificacion de inicio de sesion.
+
+// Formulario y verificacion de inicio de sesion, con limite de intentos.
 
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/usuarios.php';
 
-// Si ya hay sesion, se va directo a la tierra prometida.
+// Si ya hay sesion, se va directo al dashboard.
 redirigir_si_autenticado();
 
 $errores = [];
@@ -13,22 +14,33 @@ $email = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exigir_post_csrf();
 
-    $email = strtolower(trim($_POST['email'] ?? ''));
-    $password = $_POST['password'] ?? '';
+    $email = strtolower(texto_enviado($_POST, 'email'));
+    $password = (isset($_POST['password']) && is_string($_POST['password'])) ? $_POST['password'] : '';
+    $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
 
     if ($email === '' || $password === '') {
         $errores[] = 'Escribe tu correo y tu contraseña.';
     } else {
         try {
-            $usuario = buscar_usuario_por_email($email);
+            $clave_email = mb_substr($email, 0, 150);
 
-            if ($usuario !== null && password_verify($password, $usuario['password_hash'])) {
-                iniciar_sesion_usuario((int) $usuario['id'], $usuario['nombre']);
-                redirigir('dashboard.php');
+            if (intentos_fallidos_recientes($clave_email, $ip) >= LOGIN_MAX_INTENTOS) {
+                // Bloqueado temporalmente: no se verifica la contrasena.
+                $errores[] = 'Demasiados intentos fallidos. Espera '
+                    . LOGIN_MINUTOS_BLOQUEO . ' minutos e inténtalo de nuevo.';
+            } else {
+                $usuario = buscar_usuario_por_email($email);
+
+                if ($usuario !== null && password_verify($password, $usuario['password_hash'])) {
+                    limpiar_intentos_login($clave_email, $ip);
+                    iniciar_sesion_usuario((int) $usuario['id'], $usuario['nombre']);
+                    redirigir('dashboard.php');
+                }
+
+                // Mismo mensaje si el correo no existe o la contrasena es incorrecta.
+                registrar_intento_fallido($clave_email, $ip);
+                $errores[] = 'Correo o contraseña incorrectos.';
             }
-
-            // Mismo mensaje si el correo no existe o la contrasena es incorrecta.
-            $errores[] = 'Correo o contraseña incorrectos.';
         } catch (mysqli_sql_exception $e) {
             error_log('FinanTrack - error al iniciar sesion: ' . $e->getMessage());
             $errores[] = 'No fue posible iniciar sesión. Inténtalo de nuevo.';

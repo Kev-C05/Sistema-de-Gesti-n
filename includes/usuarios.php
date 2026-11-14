@@ -71,3 +71,52 @@ function crear_usuario(string $nombre, string $email, string $password): int
         throw $e;
     }
 }
+
+// Limite de intentos de inicio de sesion, solo tienes 5, no la rieges tanto.
+
+define('LOGIN_MAX_INTENTOS', 5);
+define('LOGIN_MINUTOS_BLOQUEO', 15);
+
+// Cuenta los intentos fallidos recientes de este correo desde esta IP.
+function intentos_fallidos_recientes(string $email, string $ip): int
+{
+    $minutos = LOGIN_MINUTOS_BLOQUEO;
+
+    $stmt = obtener_conexion()->prepare(
+        'SELECT COUNT(*) AS total
+         FROM intentos_login
+         WHERE email = ? AND ip = ? AND creado_en > (NOW() - INTERVAL ? MINUTE)'
+    );
+    $stmt->bind_param('ssi', $email, $ip, $minutos);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $fila = $resultado->fetch_assoc();
+    $resultado->free();
+    $stmt->close();
+
+    return (int) $fila['total'];
+}
+
+// Registra un intento fallido y elimina registros viejos (mas de 1 dia).
+function registrar_intento_fallido(string $email, string $ip): void
+{
+    $conexion = obtener_conexion();
+
+    $stmt = $conexion->prepare('INSERT INTO intentos_login (email, ip) VALUES (?, ?)');
+    $stmt->bind_param('ss', $email, $ip);
+    $stmt->execute();
+    $stmt->close();
+
+    $stmt = $conexion->prepare('DELETE FROM intentos_login WHERE creado_en < (NOW() - INTERVAL 1 DAY)');
+    $stmt->execute();
+    $stmt->close();
+}
+
+// Borra los intentos fallidos tras un inicio de sesion correcto.
+function limpiar_intentos_login(string $email, string $ip): void
+{
+    $stmt = obtener_conexion()->prepare('DELETE FROM intentos_login WHERE email = ? AND ip = ?');
+    $stmt->bind_param('ss', $email, $ip);
+    $stmt->execute();
+    $stmt->close();
+}
