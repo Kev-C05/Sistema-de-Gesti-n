@@ -16,17 +16,7 @@ $general = totales_movimientos($usuario_id);
 $mes = totales_movimientos($usuario_id, true);
 $categorias = gastos_por_categoria_mes($usuario_id);
 
-// Datos para la grafica y la tabla de categorias.
-$etiquetas = [];
-$valores = [];
-foreach ($categorias as $fila) {
-    $etiquetas[] = $fila['nombre'];
-    $valores[] = (float) $fila['total'];
-}
 $gastos_mes = (float) $mes['gastos'];
-
-$clase_balance = (float) $general['balance'] >= 0 ? 'text-success' : 'text-danger';
-$clase_balance_mes = (float) $mes['balance'] >= 0 ? 'text-success' : 'text-danger';
 
 // Presupuestos del mes actual.
 $mes_actual = date('Y-m-01');
@@ -57,7 +47,6 @@ $total_ahorrado = total_ahorrado_objetivos($usuario_id);
 
 $titulo_pagina = 'Dashboard';
 $pagina_activa = 'dashboard';
-$scripts_extra = ['assets/js/dashboard.js'];
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -65,15 +54,7 @@ require_once __DIR__ . '/includes/header.php';
 
 <h2 class="h6 text-muted text-uppercase">Totales generales</h2>
 <div class="row g-3 mb-4">
-    <div class="col-12 col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Balance general</div>
-                <div class="fs-3 fw-semibold <?= $clase_balance ?>"><?= e(formato_dinero($general['balance'])) ?></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
+    <div class="col-6">
         <div class="card h-100">
             <div class="card-body">
                 <div class="text-muted small">Total de ingresos</div>
@@ -81,7 +62,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-4">
+    <div class="col-6">
         <div class="card h-100">
             <div class="card-body">
                 <div class="text-muted small">Total de gastos</div>
@@ -93,15 +74,7 @@ require_once __DIR__ . '/includes/header.php';
 
 <h2 class="h6 text-muted text-uppercase">Resumen del mes actual</h2>
 <div class="row g-3 mb-4">
-    <div class="col-12 col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Balance del mes</div>
-                <div class="fs-4 fw-semibold <?= $clase_balance_mes ?>"><?= e(formato_dinero($mes['balance'])) ?></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
+    <div class="col-6">
         <div class="card h-100">
             <div class="card-body">
                 <div class="text-muted small">Ingresos del mes</div>
@@ -109,7 +82,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-4">
+    <div class="col-6">
         <div class="card h-100">
             <div class="card-body">
                 <div class="text-muted small">Gastos del mes</div>
@@ -127,11 +100,6 @@ require_once __DIR__ . '/includes/header.php';
                 <?php if (empty($categorias)): ?>
                     <p class="text-muted mb-0">Aún no hay gastos registrados este mes.</p>
                 <?php else: ?>
-                    <div class="ratio ratio-4x3 mb-3">
-                        <canvas id="grafica-categorias"
-                                data-etiquetas="<?= e(json_encode($etiquetas, JSON_UNESCAPED_UNICODE)) ?>"
-                                data-valores="<?= e(json_encode($valores)) ?>"></canvas>
-                    </div>
                     <div class="table-responsive">
                         <table class="table table-sm mb-0">
                             <thead>
@@ -158,17 +126,6 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-    <div class="col-12 col-lg-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <h2 class="h6 mb-3">Ingresos vs. gastos del mes</h2>
-                <div class="ratio ratio-4x3">
-                    <canvas id="grafica-comparacion"
-                            data-valores="<?= e(json_encode([(float) $mes['ingresos'], (float) $mes['gastos']])) ?>"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <div class="row g-3">
@@ -208,17 +165,7 @@ require_once __DIR__ . '/includes/header.php';
                         <?php
                         $limite = (float) $fila['monto_limite'];
                         $gastado = (float) $fila['gastado'];
-                        $avance = $limite > 0 ? ($gastado / $limite) * 100 : 0;
-                        $ancho = (int) min(100, round($avance));
                         $excedido = (float) $fila['disponible'] < 0;
-
-                        if ($excedido) {
-                            $clase_barra = 'bg-danger';
-                        } elseif ($avance >= 80) {
-                            $clase_barra = 'bg-warning';
-                        } else {
-                            $clase_barra = 'bg-success';
-                        }
                         ?>
                         <div class="mb-3">
                             <div class="d-flex justify-content-between small">
@@ -226,10 +173,6 @@ require_once __DIR__ . '/includes/header.php';
                                 <span class="<?= $excedido ? 'text-danger' : 'text-muted' ?>">
                                     <?= e(formato_dinero($fila['gastado'])) ?> / <?= e(formato_dinero($fila['monto_limite'])) ?>
                                 </span>
-                            </div>
-                            <div class="progress" role="progressbar" style="height: 6px;"
-                                 aria-valuenow="<?= $ancho ?>" aria-valuemin="0" aria-valuemax="100">
-                                <div class="progress-bar <?= $clase_barra ?>" style="width: <?= $ancho ?>%"></div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -270,14 +213,6 @@ require_once __DIR__ . '/includes/header.php';
                         $porcentaje_obj = $completado
                             ? 100
                             : min(99, (int) floor($meta > 0 ? ($ahorrado * 100) / $meta : 0));
-
-                        if ($completado) {
-                            $clase_barra_obj = 'bg-success';
-                        } elseif ((int) $fila['dias_restantes'] < 0) {
-                            $clase_barra_obj = 'bg-danger';
-                        } else {
-                            $clase_barra_obj = 'bg-primary';
-                        }
                         ?>
                         <div class="mb-3">
                             <div class="d-flex justify-content-between small">
@@ -286,10 +221,6 @@ require_once __DIR__ . '/includes/header.php';
                                     <?= e(formato_dinero($fila['ahorrado'])) ?> / <?= e(formato_dinero($fila['monto_objetivo'])) ?>
                                     (<?= (int) $porcentaje_obj ?>%)
                                 </span>
-                            </div>
-                            <div class="progress" role="progressbar" style="height: 6px;"
-                                 aria-valuenow="<?= (int) $porcentaje_obj ?>" aria-valuemin="0" aria-valuemax="100">
-                                <div class="progress-bar <?= $clase_barra_obj ?>" style="width: <?= (int) $porcentaje_obj ?>%"></div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -305,7 +236,5 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

@@ -16,7 +16,7 @@ if ($id === false || $id < 1) {
     redirigir('categorias.php');
 }
 
-// Verificacion de propiedad: si no es del usuario, se trata como ladron.
+// Verificacion de propiedad: si no es del usuario, se rechaza.
 $categoria = obtener_categoria($id, $usuario_id);
 if ($categoria === null) {
     agregar_mensaje('danger', 'Categoría no encontrada.');

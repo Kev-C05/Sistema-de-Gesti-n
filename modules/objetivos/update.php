@@ -1,5 +1,5 @@
 <?php
-// Modifica un objetivo si vez que ya no pudiste o equivocación. 
+// Modifica un objetivo del usuario autenticado.
 
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../config/database.php';

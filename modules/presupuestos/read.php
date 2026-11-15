@@ -3,9 +3,11 @@
 
 require_once __DIR__ . '/../../config/database.php';
 
-// presupuestos del usuario en un mes, con lo gastado en la categoria. Te van a controlar la toxica. 
-function sql_base_presupuestos(): string
+// presupuestos del usuario en un mes, con lo gastado en la categoria.
+function sql_base_presupuestos(bool $solo_un_mes = true): string
 {
+    $filtro_mes = $solo_un_mes ? ' AND p.mes_anio = ?' : '';
+
     return "SELECT p.id, p.categoria_id, c.nombre AS categoria, p.mes_anio, p.monto_limite,
                    COALESCE((SELECT SUM(m.importe)
                                FROM movimientos m
@@ -16,7 +18,7 @@ function sql_base_presupuestos(): string
               FROM presupuestos p
               INNER JOIN categorias c
                   ON c.id = p.categoria_id AND c.usuario_id = p.usuario_id
-             WHERE p.usuario_id = ? AND p.mes_anio = ?";
+             WHERE p.usuario_id = ?" . $filtro_mes;
 }
 
 // Ejecuta una consulta preparada y devuelve las filas.
@@ -43,6 +45,24 @@ function listar_presupuestos_mes(int $usuario_id, string $mes_anio): array
     return consultar_presupuestos($sql, $usuario_id, $mes_anio);
 }
 
+// Todos los presupuestos del usuario (de todos los meses), del mas reciente al mas antiguo.
+function listar_presupuestos_todos(int $usuario_id): array
+{
+    $sql = 'SELECT t.*, (t.monto_limite - t.gastado) AS disponible
+            FROM (' . sql_base_presupuestos(false) . ') t
+            ORDER BY t.mes_anio DESC, t.categoria';
+
+    $stmt = obtener_conexion()->prepare($sql);
+    $stmt->bind_param('i', $usuario_id);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $filas = $resultado->fetch_all(MYSQLI_ASSOC);
+    $resultado->free();
+    $stmt->close();
+
+    return $filas;
+}
+
 // Totales del mes: presupuestado, gastado y disponible.
 function totales_presupuestos_mes(int $usuario_id, string $mes_anio): array
 {
@@ -56,7 +76,7 @@ function totales_presupuestos_mes(int $usuario_id, string $mes_anio): array
     return $filas[0];
 }
 
-// Devuelve un presupuesto SOLO si pertenece al usuario, si no nel pastel.
+// Devuelve un presupuesto SOLO si pertenece al usuario.
 function obtener_presupuesto(int $id, int $usuario_id): ?array
 {
     $stmt = obtener_conexion()->prepare(

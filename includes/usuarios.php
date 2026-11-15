@@ -15,8 +15,6 @@ function categorias_iniciales(): array
         ['Entretenimiento', 'gasto'],
         ['Otros gastos', 'gasto'],
         ['Sueldo', 'ingreso'],
-        ['Ventas', 'ingreso'],
-        ['Otros ingresos', 'ingreso'],
     ];
 }
 
@@ -36,8 +34,8 @@ function buscar_usuario_por_email(string $email): ?array
     return $usuario ?: null;
 }
 
-// Crea el usuario y sus categorias iniciales en una sola transaccion. Todo rápido papi.
-// Devuelve el id del usuario nuevo. Si algo falla, no se guarda nada. De valiste.
+// Crea el usuario y sus categorias iniciales en una sola transaccion.
+// Devuelve el id del usuario nuevo. Si algo falla, no se guarda nada.
 function crear_usuario(string $nombre, string $email, string $password): int
 {
     $conexion = obtener_conexion();
@@ -72,7 +70,7 @@ function crear_usuario(string $nombre, string $email, string $password): int
     }
 }
 
-// Limite de intentos de inicio de sesion, solo tienes 5, no la rieges tanto.
+// Limite de intentos de inicio de sesion (maximo 5 intentos).
 
 define('LOGIN_MAX_INTENTOS', 5);
 define('LOGIN_MINUTOS_BLOQUEO', 15);

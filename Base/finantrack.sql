@@ -39,7 +39,6 @@ CREATE TABLE movimientos (
   importe DECIMAL(12,2) NOT NULL,
   fecha DATE NOT NULL,
   metodo_pago VARCHAR(40) NULL,
-  observaciones VARCHAR(255) NULL,
   creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_mov_usuario_fecha (usuario_id, fecha),

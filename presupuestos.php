@@ -1,5 +1,5 @@
 <?php
-// Presupuestos mensuales: formulario, selector de mes, resumen y tabla.
+// Presupuestos mensuales: formulario y lista agrupada por meses.
 
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/modules/categorias/read.php';
@@ -11,7 +11,7 @@ requerir_login();
 $usuario_id = usuario_actual_id();
 $meses = nombres_meses();
 
-// Mes que se esta viendo (por defecto, el actual).
+// Mes y anio que se sugieren en el formulario (por defecto, el actual).
 $mes_sel = filter_var(
     valor_texto($_GET, 'mes'),
     FILTER_VALIDATE_INT,
@@ -51,18 +51,13 @@ $form = [
 
 $categorias_gasto = listar_categorias($usuario_id, 'gasto');
 
-$presupuestos = listar_presupuestos_mes($usuario_id, $mes_anio_sel);
-$totales = totales_presupuestos_mes($usuario_id, $mes_anio_sel);
-
-$excedidos = 0;
-foreach ($presupuestos as $fila) {
-    if ((float) $fila['disponible'] < 0) {
-        $excedidos++;
-    }
+// Presupuestos de todos los meses, agrupados por mes (del mas reciente al mas antiguo).
+$por_mes = [];
+foreach (listar_presupuestos_todos($usuario_id) as $fila) {
+    $por_mes[$fila['mes_anio']][] = $fila;
 }
 
-$url_vista = BASE_URL . 'presupuestos.php?mes=' . $mes_sel . '&anio=' . $anio_sel;
-$clase_disponible = (float) $totales['disponible'] >= 0 ? 'text-success' : 'text-danger';
+$url_vista = BASE_URL . 'presupuestos.php';
 
 $titulo_pagina = 'Presupuestos';
 $pagina_activa = 'presupuestos';
@@ -146,73 +141,25 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </div>
 
-<div class="card mb-3">
-    <div class="card-body">
-        <form method="get" action="<?= e(BASE_URL) ?>presupuestos.php" class="row g-2 align-items-end">
-            <div class="col-6 col-md-3">
-                <label for="ver_mes" class="form-label">Ver mes</label>
-                <select class="form-select" id="ver_mes" name="mes">
-                    <?php foreach ($meses as $numero => $nombre_mes): ?>
-                        <option value="<?= (int) $numero ?>" <?= $mes_sel === $numero ? 'selected' : '' ?>>
-                            <?= e($nombre_mes) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="col-6 col-md-2">
-                <label for="ver_anio" class="form-label">Año</label>
-                <input type="number" class="form-control" id="ver_anio" name="anio"
-                       value="<?= (int) $anio_sel ?>" min="2000" max="2100">
-            </div>
-            <div class="col-12 col-md-3">
-                <button type="submit" class="btn btn-outline-primary">Ver</button>
-            </div>
-        </form>
-    </div>
-</div>
+<h2 class="h6 text-muted text-uppercase">Presupuestos por mes</h2>
 
-<h2 class="h6 text-muted text-uppercase">
-    Resumen de <?= e($meses[$mes_sel]) ?> <?= (int) $anio_sel ?>
-</h2>
-
-<?php if ($excedidos > 0): ?>
-    <div class="alert alert-danger" role="alert">
-        Superaste el presupuesto en <?= (int) $excedidos ?> categoría(s) este mes.
+<?php if (empty($por_mes)): ?>
+    <div class="card">
+        <div class="card-body">
+            <p class="text-muted mb-0">Aún no tienes presupuestos creados.</p>
+        </div>
     </div>
 <?php endif; ?>
 
-<div class="row g-3 mb-3">
-    <div class="col-12 col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Presupuestado</div>
-                <div class="fs-4 fw-semibold"><?= e(formato_dinero($totales['presupuestado'])) ?></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Gastado</div>
-                <div class="fs-4 fw-semibold text-danger"><?= e(formato_dinero($totales['gastado'])) ?></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Disponible</div>
-                <div class="fs-4 fw-semibold <?= $clase_disponible ?>"><?= e(formato_dinero($totales['disponible'])) ?></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <?php if (empty($presupuestos)): ?>
-            <p class="text-muted mb-0">No hay presupuestos para este mes.</p>
-        <?php else: ?>
+<?php foreach ($por_mes as $mes_anio => $presupuestos): ?>
+    <?php
+    $numero_mes = (int) substr($mes_anio, 5, 2);
+    $numero_anio = (int) substr($mes_anio, 0, 4);
+    $etiqueta_mes = $meses[$numero_mes] . ' ' . $numero_anio;
+    ?>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h3 class="h6 mb-3"><?= e($etiqueta_mes) ?></h3>
             <div class="table-responsive">
                 <table class="table table-sm align-middle mb-0">
                     <thead>
@@ -221,7 +168,7 @@ require_once __DIR__ . '/includes/header.php';
                             <th class="text-end">Presupuesto</th>
                             <th class="text-end">Gastado</th>
                             <th class="text-end">Disponible</th>
-                            <th style="min-width: 130px;">Avance</th>
+                            <th>Avance</th>
                             <th>Estado</th>
                             <th class="text-end">Acciones</th>
                         </tr>
@@ -232,19 +179,15 @@ require_once __DIR__ . '/includes/header.php';
                             $limite = (float) $fila['monto_limite'];
                             $gastado = (float) $fila['gastado'];
                             $porcentaje = $limite > 0 ? ($gastado / $limite) * 100 : 0;
-                            $ancho = (int) min(100, round($porcentaje));
                             $excedido = (float) $fila['disponible'] < 0;
 
                             if ($excedido) {
-                                $clase_barra = 'bg-danger';
                                 $clase_estado = 'text-bg-danger';
                                 $texto_estado = 'Excedido';
                             } elseif ($porcentaje >= 80) {
-                                $clase_barra = 'bg-warning';
                                 $clase_estado = 'text-bg-warning';
                                 $texto_estado = 'Cerca del límite';
                             } else {
-                                $clase_barra = 'bg-success';
                                 $clase_estado = 'text-bg-success';
                                 $texto_estado = 'Dentro del límite';
                             }
@@ -257,20 +200,16 @@ require_once __DIR__ . '/includes/header.php';
                                     <?= e(formato_dinero($fila['disponible'])) ?>
                                 </td>
                                 <td>
-                                    <div class="progress" role="progressbar" style="height: 8px;"
-                                         aria-valuenow="<?= $ancho ?>" aria-valuemin="0" aria-valuemax="100">
-                                        <div class="progress-bar <?= $clase_barra ?>" style="width: <?= $ancho ?>%"></div>
-                                    </div>
                                     <div class="small text-muted"><?= (int) round($porcentaje) ?>%</div>
                                 </td>
                                 <td><span class="badge <?= $clase_estado ?>"><?= e($texto_estado) ?></span></td>
                                 <td class="text-end text-nowrap">
                                     <a class="btn btn-sm btn-outline-primary"
-                                       href="<?= e($url_vista . '&editar=' . (int) $fila['id']) ?>">Editar</a>
+                                       href="<?= e($url_vista . '?editar=' . (int) $fila['id']) ?>">Editar</a>
 
                                     <form method="post" action="<?= e(BASE_URL) ?>modules/presupuestos/delete.php"
                                           class="d-inline"
-                                          data-confirmar="<?= e('¿Eliminar el presupuesto de "' . $fila['categoria'] . '" de ' . $meses[$mes_sel] . ' ' . $anio_sel . '?') ?>">
+                                          data-confirmar="<?= e('¿Eliminar el presupuesto de "' . $fila['categoria'] . '" de ' . $etiqueta_mes . '?') ?>">
                                         <?= campo_csrf() ?>
                                         <input type="hidden" name="id" value="<?= (int) $fila['id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
@@ -281,8 +220,8 @@ require_once __DIR__ . '/includes/header.php';
                     </tbody>
                 </table>
             </div>
-        <?php endif; ?>
+        </div>
     </div>
-</div>
+<?php endforeach; ?>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

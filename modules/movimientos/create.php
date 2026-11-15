@@ -23,19 +23,18 @@ $d = $validacion['datos'];
 try {
     $stmt = obtener_conexion()->prepare(
         'INSERT INTO movimientos
-            (usuario_id, categoria_id, tipo, descripcion, importe, fecha, metodo_pago, observaciones)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+            (usuario_id, categoria_id, tipo, descripcion, importe, fecha, metodo_pago)
+         VALUES (?, ?, ?, ?, ?, ?, ?)'
     );
     $stmt->bind_param(
-        'iissssss',
+        'iisssss',
         $usuario_id,
         $d['categoria_id'],
         $d['tipo'],
         $d['descripcion'],
         $d['importe'],
         $d['fecha'],
-        $d['metodo_pago'],
-        $d['observaciones']
+        $d['metodo_pago']
     );
     $stmt->execute();
     $stmt->close();

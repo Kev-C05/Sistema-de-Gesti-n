@@ -1,6 +1,5 @@
 <?php
 // Elimina un objetivo del usuario y sus aportaciones, en una transaccion.
-// Ya ríndete si de plano no lo logras.
 
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../config/database.php';

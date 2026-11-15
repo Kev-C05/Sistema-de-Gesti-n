@@ -17,7 +17,7 @@ if ($id === false || $id < 1) {
     redirigir('movimientos.php');
 }
 
-// Verificacion de propiedad. Recuerda que ella no es de tu propiedad. 
+// Verificacion de propiedad.
 if (obtener_movimiento($id, $usuario_id) === null) {
     agregar_mensaje('danger', 'Movimiento no encontrado.');
     redirigir('movimientos.php');
@@ -37,18 +37,17 @@ try {
     $stmt = obtener_conexion()->prepare(
         'UPDATE movimientos
          SET categoria_id = ?, tipo = ?, descripcion = ?, importe = ?,
-             fecha = ?, metodo_pago = ?, observaciones = ?
+             fecha = ?, metodo_pago = ?
          WHERE id = ? AND usuario_id = ?'
     );
     $stmt->bind_param(
-        'issssssii',
+        'isssssii',
         $d['categoria_id'],
         $d['tipo'],
         $d['descripcion'],
         $d['importe'],
         $d['fecha'],
         $d['metodo_pago'],
-        $d['observaciones'],
         $id,
         $usuario_id
     );

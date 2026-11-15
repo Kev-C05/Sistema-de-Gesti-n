@@ -119,17 +119,14 @@ require_once __DIR__ . '/includes/header.php';
             if ($completado) {
                 $clase_estado = 'text-bg-success';
                 $texto_estado = 'Completado';
-                $clase_barra = 'bg-success';
                 $texto_plazo = '';
             } elseif ($dias < 0) {
                 $clase_estado = 'text-bg-danger';
                 $texto_estado = 'Vencido';
-                $clase_barra = 'bg-danger';
                 $texto_plazo = 'Venció hace ' . abs($dias) . ($dias === -1 ? ' día' : ' días');
             } else {
                 $clase_estado = 'text-bg-primary';
                 $texto_estado = 'En curso';
-                $clase_barra = 'bg-primary';
                 if ($dias === 0) {
                     $texto_plazo = 'Vence hoy';
                 } elseif ($dias === 1) {
@@ -158,10 +155,6 @@ require_once __DIR__ . '/includes/header.php';
                             <p class="small text-muted mb-2"><?= e($fila['descripcion']) ?></p>
                         <?php endif; ?>
 
-                        <div class="progress mb-1" role="progressbar" style="height: 10px;"
-                             aria-valuenow="<?= (int) $porcentaje ?>" aria-valuemin="0" aria-valuemax="100">
-                            <div class="progress-bar <?= $clase_barra ?>" style="width: <?= (int) $porcentaje ?>%"></div>
-                        </div>
                         <div class="small mb-2">
                             <strong><?= e(formato_dinero($fila['ahorrado'])) ?></strong>
                             de <?= e(formato_dinero($fila['monto_objetivo'])) ?>

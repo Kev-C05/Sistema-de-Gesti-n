@@ -4,10 +4,10 @@
 require_once __DIR__ . '/../../config/database.php';
 
 // Lista los objetivos del usuario con:
-//   ahorrado          = suma de sus aportaciones, aunque sea un misero peso
-//   num_aportaciones  = cantidad de aportaciones, aunque no hagas.
-//   restante          = meta - ahorrado (minimo 0, tampoco quieras endeudarte con la aplicación)
-//   dias_restantes    = dias hasta la fecha limite (negativo si fracasastes)
+//   ahorrado          = suma de sus aportaciones, de todas las aportaciones
+//   num_aportaciones  = cantidad de aportaciones, (0 si no hay).
+//   restante          = meta - ahorrado (minimo 0)
+//   dias_restantes    = dias hasta la fecha limite (negativo si la fecha ya paso)
 function listar_objetivos(int $usuario_id): array
 {
     $sql = "SELECT t.*, GREATEST(t.monto_objetivo - t.ahorrado, 0) AS restante

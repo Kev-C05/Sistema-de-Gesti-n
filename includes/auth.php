@@ -19,7 +19,7 @@ function usuario_actual_nombre(): string
     return (string) ($_SESSION['usuario_nombre'] ?? '');
 }
 
-// Se llama al inicio.
+// Se llama al inicio de cada pagina protegida.
 function requerir_login(): void
 {
     if (!usuario_autenticado()) {
@@ -36,7 +36,7 @@ function redirigir_si_autenticado(): void
     }
 }
 
-// Se no le contesto, si no le contesto se desespera.
+// Inicia la sesion del usuario tras un login correcto.
 function iniciar_sesion_usuario(int $id, string $nombre): void
 {
     // Nuevo id de sesion para evitar la fijacion de sesion.

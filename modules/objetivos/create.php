@@ -1,5 +1,5 @@
 <?php
-// Crea un objetivo de ahorro del usuario autenticado, matate solito con tu objetivo.
+// Crea un objetivo de ahorro del usuario autenticado.
 
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../config/database.php';

@@ -1,5 +1,5 @@
 <?php
-// Validacion compartida, aunque tu solo querías que fuera para ti.
+// Validacion compartida de los datos de movimientos.
 
 require_once __DIR__ . '/../../includes/funciones.php';
 require_once __DIR__ . '/../categorias/read.php';
@@ -22,7 +22,6 @@ function validar_datos_movimiento(array $post, int $usuario_id): array
     $errores = [];
 
     $descripcion = valor_texto($post, 'descripcion');
-    $observaciones = valor_texto($post, 'observaciones');
     $metodo_pago = valor_texto($post, 'metodo_pago');
     $categoria_id = filter_var(valor_texto($post, 'categoria_id'), FILTER_VALIDATE_INT);
     $importe = validar_importe(valor_texto($post, 'importe'));
@@ -40,11 +39,8 @@ function validar_datos_movimiento(array $post, int $usuario_id): array
     if ($metodo_pago !== '' && !in_array($metodo_pago, metodos_pago(), true)) {
         $errores[] = 'El método de pago no es válido.';
     }
-    if (mb_strlen($observaciones) > 255) {
-        $errores[] = 'Las observaciones admiten máximo 255 caracteres.';
-    }
 
-    // La categoria debe existir y ser del usuario. De ella sale el tipo, aunque no el interés a ti.
+    // La categoria debe existir y ser del usuario. De ella sale el tipo.
     $tipo = null;
     $categoria = null;
     if ($categoria_id !== false && $categoria_id > 0) {
@@ -65,7 +61,6 @@ function validar_datos_movimiento(array $post, int $usuario_id): array
             'importe'       => $importe,
             'fecha'         => $fecha,
             'metodo_pago'   => $metodo_pago === '' ? null : $metodo_pago,
-            'observaciones' => $observaciones === '' ? null : $observaciones,
         ],
     ];
 }
@@ -73,7 +68,7 @@ function validar_datos_movimiento(array $post, int $usuario_id): array
 // Guarda lo escrito en la sesion para repoblar el formulario tras un error.
 function guardar_formulario_movimiento(array $post): void
 {
-    $campos = ['categoria_id', 'descripcion', 'importe', 'fecha', 'metodo_pago', 'observaciones'];
+    $campos = ['categoria_id', 'descripcion', 'importe', 'fecha', 'metodo_pago'];
     $guardar = [];
     foreach ($campos as $campo) {
         $guardar[$campo] = (isset($post[$campo]) && is_string($post[$campo])) ? $post[$campo] : '';

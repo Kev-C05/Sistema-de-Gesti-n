@@ -1,5 +1,5 @@
 <?php
-// Formulario para registrar/editar movimientos e historial con filtros.
+// Formulario para registrar o editar movimientos y tabla de movimientos con paginacion.
 
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/modules/categorias/read.php';
@@ -11,7 +11,7 @@ requerir_login();
 $usuario_id = usuario_actual_id();
 $por_pagina = 10;
 
-$filtros = leer_filtros_movimientos($_GET);
+$pagina = leer_pagina_movimientos($_GET);
 
 // Modo edicion (solo si el movimiento es del usuario).
 $editando = null;
@@ -35,28 +35,23 @@ $form = [
     'importe'       => $antiguos['importe']       ?? ($editando['importe'] ?? ''),
     'fecha'         => $antiguos['fecha']         ?? ($editando['fecha'] ?? date('Y-m-d')),
     'metodo_pago'   => $antiguos['metodo_pago']   ?? ($editando['metodo_pago'] ?? ''),
-    'observaciones' => $antiguos['observaciones'] ?? ($editando['observaciones'] ?? ''),
 ];
 
 $categorias_gasto = listar_categorias($usuario_id, 'gasto');
 $categorias_ingreso = listar_categorias($usuario_id, 'ingreso');
 $sin_categorias = empty($categorias_gasto) && empty($categorias_ingreso);
 
-// Historial: conteo, pagina valida, totales y filas.
-$total = contar_movimientos($usuario_id, $filtros);
+// Tabla de movimientos: conteo, pagina valida y filas.
+$total = contar_movimientos($usuario_id);
 $total_paginas = max(1, (int) ceil($total / $por_pagina));
-if ($filtros['pagina'] > $total_paginas) {
-    $filtros['pagina'] = $total_paginas;
+if ($pagina > $total_paginas) {
+    $pagina = $total_paginas;
 }
 
-$totales = totales_movimientos_filtrados($usuario_id, $filtros);
-$movimientos = listar_movimientos($usuario_id, $filtros, $por_pagina);
+$movimientos = listar_movimientos($usuario_id, $pagina, $por_pagina);
 
-$hay_filtros = $filtros['q'] !== '' || $filtros['tipo'] !== '' || $filtros['categoria_id'] > 0
-    || $filtros['desde'] !== '' || $filtros['hasta'] !== '';
-$primero = $total > 0 ? ($filtros['pagina'] - 1) * $por_pagina + 1 : 0;
-$ultimo = min($total, $filtros['pagina'] * $por_pagina);
-$clase_balance = (float) $totales['balance'] >= 0 ? 'text-success' : 'text-danger';
+$primero = $total > 0 ? ($pagina - 1) * $por_pagina + 1 : 0;
+$ultimo = min($total, $pagina * $por_pagina);
 
 $titulo_pagina = 'Movimientos';
 $pagina_activa = 'movimientos';
@@ -148,12 +143,6 @@ require_once __DIR__ . '/includes/header.php';
                             <?php endforeach; ?>
                         </select>
                     </div>
-
-                    <div class="col-12 col-md-3">
-                        <label for="observaciones" class="form-label">Observaciones <span class="text-muted">(opcional)</span></label>
-                        <input type="text" class="form-control" id="observaciones" name="observaciones"
-                               value="<?= e($form['observaciones']) ?>" maxlength="255">
-                    </div>
                 </div>
 
                 <div class="mt-3">
@@ -161,7 +150,7 @@ require_once __DIR__ . '/includes/header.php';
                         <?= $editando ? 'Guardar cambios' : 'Registrar movimiento' ?>
                     </button>
                     <?php if ($editando): ?>
-                        <a href="<?= e(url_movimientos($filtros)) ?>" class="btn btn-outline-secondary">Cancelar</a>
+                        <a href="<?= e(url_movimientos()) ?>" class="btn btn-outline-secondary">Cancelar</a>
                     <?php endif; ?>
                 </div>
             </form>
@@ -169,116 +158,11 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </div>
 
-<div class="card mb-3">
-    <div class="card-body">
-        <h2 class="h6 mb-3">Historial y filtros</h2>
-
-        <form method="get" action="<?= e(BASE_URL) ?>movimientos.php">
-            <div class="row g-3">
-                <div class="col-12 col-md-4">
-                    <label for="filtro_q" class="form-label">Buscar en la descripción</label>
-                    <input type="text" class="form-control" id="filtro_q" name="q"
-                           value="<?= e($filtros['q']) ?>" maxlength="100">
-                </div>
-
-                <div class="col-6 col-md-2">
-                    <label for="filtro_tipo" class="form-label">Tipo</label>
-                    <select class="form-select" id="filtro_tipo" name="tipo">
-                        <option value="">Todos</option>
-                        <option value="gasto" <?= $filtros['tipo'] === 'gasto' ? 'selected' : '' ?>>Gastos</option>
-                        <option value="ingreso" <?= $filtros['tipo'] === 'ingreso' ? 'selected' : '' ?>>Ingresos</option>
-                    </select>
-                </div>
-
-                <div class="col-6 col-md-3">
-                    <label for="filtro_categoria" class="form-label">Categoría</label>
-                    <select class="form-select" id="filtro_categoria" name="categoria">
-                        <option value="">Todas</option>
-                        <?php if (!empty($categorias_gasto)): ?>
-                            <optgroup label="Gastos">
-                                <?php foreach ($categorias_gasto as $cat): ?>
-                                    <option value="<?= (int) $cat['id'] ?>"
-                                        <?= $filtros['categoria_id'] === (int) $cat['id'] ? 'selected' : '' ?>>
-                                        <?= e($cat['nombre']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </optgroup>
-                        <?php endif; ?>
-                        <?php if (!empty($categorias_ingreso)): ?>
-                            <optgroup label="Ingresos">
-                                <?php foreach ($categorias_ingreso as $cat): ?>
-                                    <option value="<?= (int) $cat['id'] ?>"
-                                        <?= $filtros['categoria_id'] === (int) $cat['id'] ? 'selected' : '' ?>>
-                                        <?= e($cat['nombre']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </optgroup>
-                        <?php endif; ?>
-                    </select>
-                </div>
-
-                <div class="col-12 col-md-3">
-                    <label for="filtro_orden" class="form-label">Orden por fecha</label>
-                    <select class="form-select" id="filtro_orden" name="orden">
-                        <option value="desc" <?= $filtros['orden'] === 'desc' ? 'selected' : '' ?>>Más recientes primero</option>
-                        <option value="asc" <?= $filtros['orden'] === 'asc' ? 'selected' : '' ?>>Más antiguos primero</option>
-                    </select>
-                </div>
-
-                <div class="col-6 col-md-3">
-                    <label for="filtro_desde" class="form-label">Desde</label>
-                    <input type="date" class="form-control" id="filtro_desde" name="desde"
-                           value="<?= e($filtros['desde']) ?>">
-                </div>
-
-                <div class="col-6 col-md-3">
-                    <label for="filtro_hasta" class="form-label">Hasta</label>
-                    <input type="date" class="form-control" id="filtro_hasta" name="hasta"
-                           value="<?= e($filtros['hasta']) ?>">
-                </div>
-
-                <div class="col-12 col-md-6 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-primary">Filtrar</button>
-                    <a href="<?= e(BASE_URL) ?>movimientos.php" class="btn btn-outline-secondary">Limpiar</a>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<h2 class="h6 text-muted text-uppercase">Balance de los resultados<?= $hay_filtros ? ' filtrados' : '' ?></h2>
-<div class="row g-3 mb-3">
-    <div class="col-12 col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Ingresos</div>
-                <div class="fs-4 fw-semibold text-success"><?= e(formato_dinero($totales['ingresos'])) ?></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Gastos</div>
-                <div class="fs-4 fw-semibold text-danger"><?= e(formato_dinero($totales['gastos'])) ?></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Balance</div>
-                <div class="fs-4 fw-semibold <?= $clase_balance ?>"><?= e(formato_dinero($totales['balance'])) ?></div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="card">
     <div class="card-body">
         <?php if (empty($movimientos)): ?>
             <p class="text-muted mb-0">
-                <?= $hay_filtros ? 'No se encontraron movimientos con esos filtros.' : 'Aún no tienes movimientos registrados.' ?>
+                Aún no tienes movimientos registrados.
             </p>
         <?php else: ?>
             <div class="table-responsive">
@@ -300,9 +184,6 @@ require_once __DIR__ . '/includes/header.php';
                                 <td class="text-nowrap"><?= e(date('d/m/Y', strtotime($fila['fecha']))) ?></td>
                                 <td>
                                     <?= e($fila['descripcion']) ?>
-                                    <?php if (!empty($fila['observaciones'])): ?>
-                                        <div class="small text-muted"><?= e($fila['observaciones']) ?></div>
-                                    <?php endif; ?>
                                 </td>
                                 <td>
                                     <span class="badge <?= $es_ingreso ? 'text-bg-success' : 'text-bg-danger' ?>">
@@ -315,7 +196,7 @@ require_once __DIR__ . '/includes/header.php';
                                 </td>
                                 <td class="text-end text-nowrap">
                                     <a class="btn btn-sm btn-outline-primary"
-                                       href="<?= e(url_movimientos($filtros, ['editar' => (int) $fila['id']])) ?>">Editar</a>
+                                       href="<?= e(url_movimientos(['editar' => (int) $fila['id']])) ?>">Editar</a>
 
                                     <form method="post" action="<?= e(BASE_URL) ?>modules/movimientos/delete.php"
                                           class="d-inline"
@@ -336,16 +217,16 @@ require_once __DIR__ . '/includes/header.php';
                     Mostrando <?= (int) $primero ?>–<?= (int) $ultimo ?> de <?= (int) $total ?> movimientos
                 </span>
                 <ul class="pagination pagination-sm mb-0">
-                    <li class="page-item <?= $filtros['pagina'] <= 1 ? 'disabled' : '' ?>">
+                    <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
                         <a class="page-link"
-                           href="<?= e(url_movimientos($filtros, ['pagina' => max(1, $filtros['pagina'] - 1)])) ?>">Anterior</a>
+                           href="<?= e(url_movimientos(['pagina' => max(1, $pagina - 1)])) ?>">Anterior</a>
                     </li>
                     <li class="page-item disabled">
-                        <span class="page-link">Página <?= (int) $filtros['pagina'] ?> de <?= (int) $total_paginas ?></span>
+                        <span class="page-link">Página <?= (int) $pagina ?> de <?= (int) $total_paginas ?></span>
                     </li>
-                    <li class="page-item <?= $filtros['pagina'] >= $total_paginas ? 'disabled' : '' ?>">
+                    <li class="page-item <?= $pagina >= $total_paginas ? 'disabled' : '' ?>">
                         <a class="page-link"
-                           href="<?= e(url_movimientos($filtros, ['pagina' => min($total_paginas, $filtros['pagina'] + 1)])) ?>">Siguiente</a>
+                           href="<?= e(url_movimientos(['pagina' => min($total_paginas, $pagina + 1)])) ?>">Siguiente</a>
                     </li>
                 </ul>
             </nav>

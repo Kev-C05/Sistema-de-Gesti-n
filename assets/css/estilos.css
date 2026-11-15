@@ -1,8 +1,225 @@
-body {
-    background-color: #f5f6f8;
+/* ==========================================================
+   FinanTrack - estilos
+   Paleta: Sea Green, Spring Green, Teal, Mint Green, Fern Green
+   Bordes redondeados: 32px, 12px y 8px
+   ========================================================== */
+
+:root {
+    /* Paleta */
+    --ft-sea-green: #2E8B57;
+    --ft-spring-green: #00FF7F;
+    --ft-teal: #008080;
+    --ft-mint: #98FB98;
+    --ft-fern: #4F7942;
+
+    /* Derivados */
+    --ft-fondo: color-mix(in srgb, var(--ft-mint) 14%, white);
+    --ft-borde: color-mix(in srgb, var(--ft-fern) 22%, white);
+    --ft-texto: color-mix(in srgb, var(--ft-fern) 40%, black);
+
+    /* Bordes */
+    --ft-radio-grande: 32px;
+    --ft-radio-medio: 12px;
+    --ft-radio-chico: 8px;
+
+    /* Se reemplazan los colores de Bootstrap */
+    --bs-primary: var(--ft-sea-green);
+    --bs-primary-rgb: 46, 139, 87;
+    --bs-success: var(--ft-fern);
+    --bs-success-rgb: 79, 121, 66;
+    --bs-info: var(--ft-teal);
+    --bs-info-rgb: 0, 128, 128;
+    --bs-link-color-rgb: 0, 128, 128;
+    --bs-link-hover-color-rgb: 46, 139, 87;
+    --bs-body-color: var(--ft-texto);
+    --bs-border-radius: var(--ft-radio-chico);
+    --bs-border-radius-sm: var(--ft-radio-chico);
+    --bs-border-radius-lg: var(--ft-radio-medio);
 }
 
+body {
+    background-color: var(--ft-fondo);
+    color: var(--ft-texto);
+}
+
+/* navbar */
+.navbar.bg-dark {
+    --bs-dark-rgb: 0, 128, 128; /* Teal */
+    border-bottom: 3px solid var(--ft-spring-green);
+}
+
+.navbar .navbar-brand {
+    font-weight: 700;
+    color: var(--ft-mint);
+}
+
+.navbar .nav-link {
+    border-radius: var(--ft-radio-chico);
+    transition: background-color .2s ease, color .2s ease;
+}
+
+.navbar .nav-link:hover {
+    background-color: rgba(255, 255, 255, .12);
+}
+
+.navbar .nav-link.active {
+    color: var(--ft-mint);
+    font-weight: 600;
+}
+
+/* Tarjetas */
+.card {
+    border: 1px solid var(--ft-borde);
+    border-radius: var(--ft-radio-medio);
+    --bs-card-border-radius: var(--ft-radio-medio);
+    --bs-card-inner-border-radius: calc(var(--ft-radio-medio) - 1px);
+}
+
+.tarjeta-bienvenida .card {
+    max-width: 600px; /* Un poco más compacta para que parezca tarjeta */
+    margin: 3rem auto;
+    padding: 2rem 1.5rem;
+    border-radius: var(--ft-radio-grande, 16px); /* El 16px es respaldo por si no carga la variable */
+    border: 2px solid var(--ft-sea-green, #2e8b57);
+    background-color: #ffffff;
+}
+
+.tarjeta-bienvenida .titulo-principal {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--ft-sea-green, #2e8b57);
+    margin-bottom: 0.5rem;
+}
+
+.tarjeta-bienvenida .subtitulo {
+    font-size: 1.15rem;
+    color: #555555;
+    margin-bottom: 0;
+}
+
+/* Login */
 .tarjeta-auth {
     max-width: 460px;
     margin: 2rem auto;
+}
+
+.tarjeta-auth .card {
+    border-radius: var(--ft-radio-grande);
+    --bs-card-border-radius: var(--ft-radio-grande);
+    --bs-card-inner-border-radius: calc(var(--ft-radio-grande) - 1px);
+    border-color: var(--ft-sea-green);
+}
+
+.tarjeta-auth .card-body {
+    padding: 2rem !important;
+}
+
+/* Formularios */
+.form-control,
+.form-select {
+    border-radius: var(--ft-radio-chico);
+    border-color: var(--ft-borde);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--ft-sea-green);
+    box-shadow: 0 0 0 .25rem rgba(0, 255, 127, .3); /* Spring Green */
+}
+
+/* Botones */
+.btn {
+    border-radius: var(--ft-radio-chico);
+    font-weight: 600;
+    transition: background-color .2s ease, border-color .2s ease, color .2s ease,
+                transform .15s ease, box-shadow .2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .12);
+}
+
+.btn:active {
+    transform: translateY(0) scale(.97);
+    box-shadow: none;
+}
+
+.btn:focus-visible {
+    box-shadow: 0 0 0 .25rem rgba(0, 255, 127, .45);
+}
+
+.btn:disabled,
+.btn.disabled {
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--ft-sea-green);
+    --bs-btn-border-color: var(--ft-sea-green);
+    --bs-btn-hover-bg: var(--ft-teal);
+    --bs-btn-hover-border-color: var(--ft-teal);
+    --bs-btn-active-bg: var(--ft-fern);
+    --bs-btn-active-border-color: var(--ft-fern);
+    --bs-btn-disabled-bg: var(--ft-sea-green);
+    --bs-btn-disabled-border-color: var(--ft-sea-green);
+    --bs-btn-focus-shadow-rgb: 0, 255, 127;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--ft-sea-green);
+    --bs-btn-border-color: var(--ft-sea-green);
+    --bs-btn-hover-bg: var(--ft-sea-green);
+    --bs-btn-hover-border-color: var(--ft-sea-green);
+    --bs-btn-active-bg: var(--ft-teal);
+    --bs-btn-active-border-color: var(--ft-teal);
+    --bs-btn-disabled-color: var(--ft-sea-green);
+    --bs-btn-disabled-border-color: var(--ft-sea-green);
+}
+
+.btn-outline-secondary {
+    --bs-btn-color: var(--ft-fern);
+    --bs-btn-border-color: var(--ft-fern);
+    --bs-btn-hover-bg: var(--ft-fern);
+    --bs-btn-hover-border-color: var(--ft-fern);
+    --bs-btn-active-bg: var(--ft-fern);
+    --bs-btn-active-border-color: var(--ft-fern);
+}
+
+/* Otros */
+.alert {
+    border-radius: var(--ft-radio-medio);
+}
+
+.badge {
+    border-radius: var(--ft-radio-chico);
+}
+
+.progress {
+    border-radius: var(--ft-radio-chico);
+    background-color: color-mix(in srgb, var(--ft-mint) 35%, white);
+}
+
+.progress-bar {
+    border-radius: var(--ft-radio-chico);
+}
+
+.page-link {
+    color: var(--ft-teal);
+    border-radius: var(--ft-radio-chico);
+}
+
+.page-link:hover {
+    color: var(--ft-sea-green);
+    background-color: color-mix(in srgb, var(--ft-mint) 30%, white);
+}
+
+.table {
+    --bs-table-border-color: var(--ft-borde);
+}
+
+.text-muted {
+    color: color-mix(in srgb, var(--ft-fern) 70%, #555) !important;
 }

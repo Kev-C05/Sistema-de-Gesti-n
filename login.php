@@ -51,7 +51,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $titulo_pagina = 'Iniciar sesión';
 $scripts_extra = ['assets/js/validaciones.js'];
 require_once __DIR__ . '/includes/header.php';
+
 ?>
+<div class="tarjeta-bienvenida">
+  <div class="card shadow-sm text-center">
+    <div class="card-body">
+      <h1 class="titulo-principal">Bienvenido a FinanTrack</h1>
+      <p class="subtitulo">Administrador Financiero Personal :)</p>
+    </div>
+  </div>
+</div>
 
 <div class="tarjeta-auth">
     <div class="card shadow-sm">

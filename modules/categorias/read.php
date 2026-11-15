@@ -3,7 +3,7 @@
 
 require_once __DIR__ . '/../../config/database.php';
 
-// Lista las categorias del usuario con el numero de usos, asi que no se me escapa nada.
+// Lista las categorias del usuario con el numero de usos.
 function listar_categorias(int $usuario_id, ?string $tipo = null): array
 {
     $sql = "SELECT c.id, c.nombre, c.tipo,
@@ -33,7 +33,7 @@ function listar_categorias(int $usuario_id, ?string $tipo = null): array
     return $filas;
 }
 
-// Devuelve una categoria SOLO si pertenece al usuario; si no, pelaste.
+// Devuelve una categoria SOLO si pertenece al usuario; si no, devuelve null.
 function obtener_categoria(int $id, int $usuario_id): ?array
 {
     $stmt = obtener_conexion()->prepare(

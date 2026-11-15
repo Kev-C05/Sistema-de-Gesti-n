@@ -23,7 +23,7 @@ function listar_aportaciones(int $objetivo_id, int $usuario_id): array
     return $filas;
 }
 
-// Devuelve una aportacion SOLO si pertenece al patrón.
+// Devuelve una aportacion SOLO si pertenece al usuario.
 function obtener_aportacion(int $id, int $usuario_id): ?array
 {
     $stmt = obtener_conexion()->prepare(

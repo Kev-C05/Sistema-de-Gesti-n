@@ -9,7 +9,6 @@ $enlaces_menu = [
     'categorias'   => ['Categorías', 'categorias.php'],
     'presupuestos' => ['Presupuestos', 'presupuestos.php'],
     'objetivos'    => ['Objetivos', 'objetivos.php'],
-    'reportes'     => ['Reportes', 'reportes.php'],
 ];
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
